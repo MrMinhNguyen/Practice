@@ -55,6 +55,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
@@ -78,6 +79,8 @@ public class MainActivity extends AppCompatActivity {
     private TextView mImageDetails;
     private ImageView mMainImage;
 
+    private static HashMap<String, Float> resultList = new HashMap();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -86,6 +89,7 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         FloatingActionButton fab = findViewById(R.id.fab);
+
         fab.setOnClickListener(view -> {
             AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
             builder
@@ -277,6 +281,19 @@ public class MainActivity extends AppCompatActivity {
             if (activity != null && !activity.isFinishing()) {
                 TextView imageDetail = activity.findViewById(R.id.image_details);
                 imageDetail.setText(result);
+
+//                boolean correct = false;
+
+
+                for (String s : resultList.keySet()){
+                    if (resultList.get(s) >= 80 && s.equals("bottle")){
+//                        System.out.println(s + " - " + resultList.get(s));
+                        System.out.println("found bottle");
+//                        correct = true;
+//                        break;
+                    }
+                }
+
             }
         }
     }
@@ -316,15 +333,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private static String convertResponseToString(BatchAnnotateImagesResponse response) {
+
         StringBuilder message = new StringBuilder("I found these things:\n\n");
 
         List<EntityAnnotation> labels = response.getResponses().get(0).getLabelAnnotations();
         if (labels != null) {
             for (EntityAnnotation label : labels) {
-                message.append(String.format(Locale.US, "%.3f: %s", label.getScore(), label.getDescription()));
+                message.append(String.format(Locale.US, "%.3f: %s", label.getScore()*100, label.getDescription()));
                 message.append("\n");
+
+                resultList.put(label.getDescription(),label.getScore()*100);
+
             }
-        } else {
+        }
+        else {
             message.append("nothing");
         }
 
